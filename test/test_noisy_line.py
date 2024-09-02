@@ -1,5 +1,7 @@
 import unittest
-from src.noisy_line import NoisyLine
+
+import numpy as np
+from src.linear.noisy_line import NoisyLine
 
 class TestNoisyLine(unittest.TestCase):
     def test_evaluate(self):
@@ -9,7 +11,7 @@ class TestNoisyLine(unittest.TestCase):
         x = 3.0
 
         noisy_line = NoisyLine(slope, intercept, noise_amplitude)
-        result = noisy_line.evaluate(x)
+        result = np.mean([noisy_line.evaluate(x) for _ in range(1000)])
 
         # Since noise is random, we can't check for an exact value
         expected_value = slope * x + intercept
