@@ -3,16 +3,19 @@ import matplotlib.pyplot as plt
 plt.switch_backend('TkAgg')
 plt.rcParams['font.size'] = 16
 
+from src.linear.lazy_thompson_sampling import LazyThompsonSampling
 from src.linear.arbitrary_sampling import ArbitrarySampling
 from src.linear.thompson_sampling import ThompsonSampling
 
 def compare_sampling_strategies(num_points_list, num_trials=100):
     arbitrary_results = []
     thompson_results = []
+    lazy_thompson_results = []
 
     for num_points in num_points_list:
         arbitrary_errors = []
         thompson_errors = []
+        lazy_thompson_errors = []
 
         for _ in range(num_trials):
             # Generate true function and noisy observations
@@ -49,19 +52,35 @@ def compare_sampling_strategies(num_points_list, num_trials=100):
             thompson_error = np.abs(true_root + thompson_fit[1]/thompson_fit[0])
             thompson_errors.append(thompson_error)
 
+            # Lazy Thompson Sampling
+            lazy_thompson_sampling = LazyThompsonSampling(lambda: np.random.normal(0, 1), noise_amplitude)
+            lazy_thompson_x = []
+            lazy_thompson_y = []
+            for _ in range(num_points):
+                x = lazy_thompson_sampling.get_next_sampling_point(lazy_thompson_x, lazy_thompson_y, noise_amplitude)
+                y = true_slope * x + true_intercept + np.random.normal(0, noise_amplitude)
+                lazy_thompson_x.append(x)
+                lazy_thompson_y.append(y)
+            lazy_thompson_fit = np.polyfit(lazy_thompson_x, lazy_thompson_y, 1)
+            lazy_thompson_error = np.abs(true_root + lazy_thompson_fit[1]/lazy_thompson_fit[0])
+            lazy_thompson_errors.append(lazy_thompson_error)
+
         arbitrary_results.append(np.mean(arbitrary_errors))
         thompson_results.append(np.mean(thompson_errors))
-
+        lazy_thompson_results.append(np.mean(lazy_thompson_errors))
     plt.loglog(num_points_list, arbitrary_results, 'o', label='Arbitrary Sampling')
     plt.loglog(num_points_list, thompson_results, 'o', label='Thompson Sampling')
+    plt.loglog(num_points_list, lazy_thompson_results, 'o', label='Lazy Thompson Sampling')
 
     # Fit power laws
     arbitrary_fit = np.polyfit(np.log(num_points_list), np.log(arbitrary_results), 1)
     thompson_fit = np.polyfit(np.log(num_points_list), np.log(thompson_results), 1)
+    lazy_thompson_fit = np.polyfit(np.log(num_points_list), np.log(lazy_thompson_results), 1)
 
     # Plot power law fits
     plt.loglog(num_points_list, np.exp(np.polyval(arbitrary_fit, np.log(num_points_list))), '--', label=f'Arbitrary Fit: slope={arbitrary_fit[0]:.2f}')
     plt.loglog(num_points_list, np.exp(np.polyval(thompson_fit, np.log(num_points_list))), '--', label=f'Thompson Fit: slope={thompson_fit[0]:.2f}')
+    plt.loglog(num_points_list, np.exp(np.polyval(lazy_thompson_fit, np.log(num_points_list))), '--', label=f'Lazy Thompson Fit: slope={lazy_thompson_fit[0]:.2f}')
     plt.xlabel('Number of Sampling Points')
     plt.ylabel('Mean Squared Error')
     plt.legend()
