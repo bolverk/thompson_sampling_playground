@@ -23,9 +23,12 @@ class ThompsonSampling(SamplingStrategy):
         """
         # Placeholder for the actual implementation
 
+        if not previous_x:
+            return self.prior_distribution()
+
         fit = np.polyfit(previous_x, previous_y, 1)
         # Calculate the covariance matrix of the previous measurements
-        X = np.vstack([previous_x, np.ones(len(previous_x))]).T
+        X = np.vstack((previous_x, np.ones_like(previous_x)))
         hessian = X@X.T/self.noise_amplitude**2
         covariance = np.linalg.pinv(hessian)
         variance = (fit[1]/fit[0])**2*(
