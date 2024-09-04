@@ -68,9 +68,12 @@ def compare_sampling_strategies(num_points_list, num_trials=100):
         arbitrary_results.append(np.mean(arbitrary_errors))
         thompson_results.append(np.mean(thompson_errors))
         lazy_thompson_results.append(np.mean(lazy_thompson_errors))
-    plt.loglog(num_points_list, arbitrary_results, 'o', label='Arbitrary Sampling')
-    plt.loglog(num_points_list, thompson_results, 'o', label='Thompson Sampling')
-    plt.loglog(num_points_list, lazy_thompson_results, 'o', label='Lazy Thompson Sampling')
+    # Get default color cycle
+    color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
+
+    plt.loglog(num_points_list, arbitrary_results, 'o', label='Arbitrary Sampling', color=color_cycle[0])
+    plt.loglog(num_points_list, thompson_results, 'o', label='Thompson Sampling', color=color_cycle[1])
+    plt.loglog(num_points_list, lazy_thompson_results, 'o', label='Lazy Thompson Sampling', color=color_cycle[2])
 
     # Fit power laws
     arbitrary_fit = np.polyfit(np.log(num_points_list), np.log(arbitrary_results), 1)
@@ -78,9 +81,9 @@ def compare_sampling_strategies(num_points_list, num_trials=100):
     lazy_thompson_fit = np.polyfit(np.log(num_points_list), np.log(lazy_thompson_results), 1)
 
     # Plot power law fits
-    plt.loglog(num_points_list, np.exp(np.polyval(arbitrary_fit, np.log(num_points_list))), '--', label=f'Arbitrary Fit: slope={arbitrary_fit[0]:.2f}')
-    plt.loglog(num_points_list, np.exp(np.polyval(thompson_fit, np.log(num_points_list))), '--', label=f'Thompson Fit: slope={thompson_fit[0]:.2f}')
-    plt.loglog(num_points_list, np.exp(np.polyval(lazy_thompson_fit, np.log(num_points_list))), '--', label=f'Lazy Thompson Fit: slope={lazy_thompson_fit[0]:.2f}')
+    plt.loglog(num_points_list, np.exp(np.polyval(arbitrary_fit, np.log(num_points_list))), '--', label=f'Arbitrary Fit: slope={arbitrary_fit[0]:.2f}', color=color_cycle[0])
+    plt.loglog(num_points_list, np.exp(np.polyval(thompson_fit, np.log(num_points_list))), '--', label=f'Thompson Fit: slope={thompson_fit[0]:.2f}', color=color_cycle[1])
+    plt.loglog(num_points_list, np.exp(np.polyval(lazy_thompson_fit, np.log(num_points_list))), '--', label=f'Lazy Thompson Fit: slope={lazy_thompson_fit[0]:.2f}', color=color_cycle[2])
     plt.xlabel('Number of Sampling Points')
     plt.ylabel('Mean Squared Error')
     plt.legend()
