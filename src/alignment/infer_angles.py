@@ -16,5 +16,5 @@ def infer_angles(decryption_angles, intensity_measurements):
         b_vec = b_mat.flatten()
         vec += intensity * b_vec
         mat += np.outer(b_vec, b_vec)
-    a_vec = np.linalg.pinv(mat) @ vec
+    a_vec = np.linalg.lstsq(mat, vec, rcond=None)[0]
     return np.angle(a_vec[:len(decryption_angles[0])])
